@@ -1,0 +1,2 @@
+# Dependencias principales del agente
+tavily-python  # Required for external web search integration in smoke test and tools

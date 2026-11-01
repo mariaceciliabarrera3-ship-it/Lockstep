@@ -1,0 +1,662 @@
+[
+ {
+  "name": "sound-csv-two-stages",
+  "expected": "APPROVE",
+  "planted_issue": "",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "CSV loader",
+     "objective": "Read a CSV file into a list of rows",
+     "requirements": [],
+     "files": [
+      "stats/loader.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "load_csv('ok.csv') returns a list of dicts with one dict per data row",
+      "load_csv on an empty file returns an empty list",
+      "load_csv on a missing file raises FileNotFoundError"
+     ],
+     "tests": [
+      "test_loader.py"
+     ],
+     "risks": [
+      "very large files"
+     ],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "load_csv(path: str) -> list[dict]",
+       "description": "returns rows as dicts keyed by header"
+      }
+     ],
+     "secrets": []
+    },
+    {
+     "number": 2,
+     "name": "Command line summary",
+     "objective": "Print basic statistics for a numeric column",
+     "requirements": [],
+     "files": [
+      "stats/cli.py"
+     ],
+     "dependencies": [
+      "Stage 1: load_csv"
+     ],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "running 'python -m stats.cli data.csv price' prints count, mean, min and max of the column",
+      "an unknown column name prints 'column not found' and exits with code 2"
+     ],
+     "tests": [
+      "test_cli.py"
+     ],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "cli",
+       "name": "python -m stats.cli <csv_path> <column>",
+       "description": "prints count, mean, min, max"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "sound-three-stages",
+  "expected": "APPROVE",
+  "planted_issue": "",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Tokenizer",
+     "objective": "Split text into lowercase words",
+     "requirements": [],
+     "files": [
+      "wc/tokenize.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "tokenize('Hello, World!') returns ['hello', 'world']",
+      "tokenize('') returns []"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "tokenize(text: str) -> list[str]",
+       "description": "lowercase words without punctuation"
+      }
+     ],
+     "secrets": []
+    },
+    {
+     "number": 2,
+     "name": "Counter",
+     "objective": "Count word frequencies",
+     "requirements": [],
+     "files": [
+      "wc/count.py"
+     ],
+     "dependencies": [
+      "Stage 1"
+     ],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "count(['a','b','a']) returns {'a': 2, 'b': 1}"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "count(words: list[str]) -> dict[str, int]",
+       "description": "frequency per word"
+      }
+     ],
+     "secrets": []
+    },
+    {
+     "number": 3,
+     "name": "Report",
+     "objective": "Print the top N words",
+     "requirements": [],
+     "files": [
+      "wc/report.py"
+     ],
+     "dependencies": [
+      "Stage 2"
+     ],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "top(freqs, 2) returns the two most frequent words in descending order",
+      "ties are ordered alphabetically"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "top(freqs: dict[str, int], n: int) -> list[tuple[str, int]]",
+       "description": "top n words"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "sound-java-validator",
+  "expected": "APPROVE",
+  "planted_issue": "",
+  "manual": {
+   "language_profiles": [
+    "java"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Email validator",
+     "objective": "Validate email addresses",
+     "requirements": [],
+     "files": [
+      "src/main/java/Validator.java",
+      "pom.xml"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "isValid(\"a@b.co\") returns true",
+      "isValid(\"a@\") returns false",
+      "isValid(null) returns false without throwing"
+     ],
+     "tests": [
+      "ValidatorTest.java"
+     ],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "class",
+       "name": "Validator",
+       "description": "static boolean isValid(String)"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "sound-secret-by-name",
+  "expected": "APPROVE",
+  "planted_issue": "",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Search client",
+     "objective": "Call a search API and return titles",
+     "requirements": [],
+     "files": [
+      "client.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "search('python') returns a list of titles using a mocked HTTP response",
+      "a missing TAVILY_API_KEY raises a clear error before any network call",
+      "the key is read from the environment and never written to disk or logs"
+     ],
+     "tests": [
+      "test_client.py uses mocks only"
+     ],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "search(query: str) -> list[str]",
+       "description": "returns result titles"
+      }
+     ],
+     "secrets": [
+      {
+       "name": "TAVILY_API_KEY",
+       "purpose": "authenticate search requests",
+       "source": "tavily account dashboard"
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "name": "sound-single-stage-tool",
+  "expected": "APPROVE",
+  "planted_issue": "",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Line counter",
+     "objective": "Count lines in a text file",
+     "requirements": [],
+     "files": [
+      "lines.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "python lines.py a.txt prints the number of lines in a.txt",
+      "an empty file prints 0",
+      "a missing file prints 'not found' and exits with code 1"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "cli",
+       "name": "python lines.py <path>",
+       "description": "prints the line count"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "flaw-untestable-criteria",
+  "expected": "REJECT",
+  "planted_issue": "Acceptance criteria are subjective and cannot be checked by a test",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "CSV summary",
+     "objective": "Summarize a CSV",
+     "requirements": [],
+     "files": [
+      "summary.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "The program works well",
+      "The output is nice and user friendly",
+      "It is fast enough"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "summarize(path)",
+       "description": "summarizes the file"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "flaw-reversed-dependency",
+  "expected": "REJECT",
+  "planted_issue": "Stage 1 depends on code that only exists in Stage 2 (wrong order)",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Command line tool",
+     "objective": "Provide the CLI that prints statistics",
+     "requirements": [],
+     "files": [
+      "cli.py"
+     ],
+     "dependencies": [
+      "Stage 2: compute_stats()"
+     ],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "python cli.py data.csv prints mean and max"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "cli",
+       "name": "python cli.py <csv>",
+       "description": "prints statistics"
+      }
+     ],
+     "secrets": []
+    },
+    {
+     "number": 2,
+     "name": "Statistics functions",
+     "objective": "Compute mean and max",
+     "requirements": [],
+     "files": [
+      "stats.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "compute_stats([1,2,3]) returns {'mean': 2.0, 'max': 3}"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "compute_stats(values: list[float]) -> dict",
+       "description": "mean and max"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "flaw-overengineering",
+  "expected": "REJECT",
+  "planted_issue": "Disproportionate: a 5-line script is turned into a microservice platform",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Platform",
+     "objective": "Count the lines of a text file using a microservice platform",
+     "requirements": [
+      "Kubernetes",
+      "message queue",
+      "PostgreSQL",
+      "API gateway"
+     ],
+     "files": [
+      "k8s/deploy.yaml",
+      "queue/worker.py",
+      "api/gateway.py",
+      "db/schema.sql",
+      "lines.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "a Kubernetes deployment starts three services",
+      "a message queue delivers the file name to a worker",
+      "the worker stores the count in a database and the gateway returns it"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "count_lines(path: str) -> int",
+       "description": "returns the number of lines"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "flaw-secret-in-repo",
+  "expected": "REJECT",
+  "planted_issue": "Instructs to store and commit a secret value in a public repository",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "API client",
+     "objective": "Call a paid API",
+     "requirements": [
+      "write the real API key into config.yml and commit it to the public repository"
+     ],
+     "files": [
+      "client.py",
+      "config.yml"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "config.yml contains the api_key value so the client can load it",
+      "the client sends requests with that key and returns the JSON"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "call(endpoint: str) -> dict",
+       "description": "returns the API response"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "flaw-contract-mismatch",
+  "expected": "REJECT",
+  "planted_issue": "Interface contract (CSV text function, XML file) contradicts the criteria (CLI printing JSON)",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Report generator",
+     "objective": "Print a JSON report from a CSV",
+     "requirements": [],
+     "files": [
+      "report.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "running 'python report.py data.csv' prints a JSON object with the row count",
+      "the JSON contains the key 'rows'"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "make_csv_text(rows: list) -> str",
+       "description": "returns CSV text"
+      },
+      {
+       "kind": "file",
+       "name": "output.xml",
+       "description": "an XML file"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "flaw-eval-on-input",
+  "expected": "REJECT",
+  "planted_issue": "Uses eval() on untrusted file content: arbitrary code execution",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Number parser",
+     "objective": "Parse numeric cells from an uploaded CSV",
+     "requirements": [
+      "use eval() on each cell so formulas work"
+     ],
+     "files": [
+      "parse.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "parse_cell('3.5') returns 3.5",
+      "parse_cell('2+2') returns 4"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "parse_cell(text: str) -> float",
+       "description": "evaluates the cell content"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "flaw-scope-creep",
+  "expected": "REJECT",
+  "planted_issue": "Stage 2 adds unrelated features (login, billing, web) and rewrites Stage 1's file",
+  "manual": {
+   "language_profiles": [
+    "python"
+   ],
+   "context_requested": false,
+   "context_reason": null,
+   "stages": [
+    {
+     "number": 1,
+     "name": "Word counter",
+     "objective": "Count words in a file",
+     "requirements": [],
+     "files": [
+      "wc.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "python wc.py a.txt prints the word count"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "cli",
+       "name": "python wc.py <path>",
+       "description": "prints word count"
+      }
+     ],
+     "secrets": []
+    },
+    {
+     "number": 2,
+     "name": "Extras",
+     "objective": "Improve the counter",
+     "requirements": [],
+     "files": [
+      "wc.py",
+      "auth.py",
+      "billing.py",
+      "web.py"
+     ],
+     "dependencies": [],
+     "inputs": [],
+     "outputs": [],
+     "acceptance_criteria": [
+      "users can log in with a password",
+      "premium users are billed monthly",
+      "a web page shows the count"
+     ],
+     "tests": [],
+     "risks": [],
+     "interface_contract": [
+      {
+       "kind": "function",
+       "name": "login(user: str, password: str) -> bool",
+       "description": "authenticates a user"
+      }
+     ],
+     "secrets": []
+    }
+   ]
+  }
+ }
+]
